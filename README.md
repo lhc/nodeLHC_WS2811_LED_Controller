@@ -41,11 +41,11 @@ This file contains user specific configuration. Check the following example for 
 ```
 
 ## UDP protocol for WS2811/WS2812 controller
-Check ````mxp.h``` in ```include``` folder. 
+Check ```mxp.h``` in ```include``` folder. 
 
 ## Editing and Building
 This project was built using eclipse IDE. Here it is a tutorial that shows an example of importing an example project (https://www.penninkhof.com/2015/06/esp8266-programming-from-eclipse/)
 
 ### Adjusting COM port of nodeLHC (or other ESP8266-based development board)
-Before building and flash, adjust COM port in ````Makefile```. Now you can build using included ```Makefile``` and flash from Eclipse IDE.
+Before building and flash, adjust COM port in ```Makefile```. Now you can build using included ```Makefile``` and flash from Eclipse IDE.
 
