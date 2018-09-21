@@ -2,18 +2,18 @@
 
 ## Description
 
-Based on nodeLHC - an ESP8266-based board with built-in USB->Serial Converter - this project implements WS2811/2812 Addressable LED controller. Full documentation about nodeLHC can be obtained here [nodeLHC Project](https://lhc.net.br/wiki/NodeLHC) and on Github [nodeLHC](https://github.com/lhc/nodeLHC). This project was tested using [Unofficial Development Kit for Espressif ESP8266 v2.1.0] (https://github.com/CHERTS/esp8266-devkit/releases).
+Based on nodeLHC - an ESP8266-based board with built-in USB->Serial Converter - this project implements WS2811/2812 Addressable LED controller. Full documentation about nodeLHC can be obtained here [nodeLHC Project](https://lhc.net.br/wiki/NodeLHC) and on Github [nodeLHC](https://github.com/lhc/nodeLHC). This project was built using platform.io with esp8266-nonos-sdk.
 
 This project receives an UDP packet from user Wi-Fi AP and translate this to WS2811/WS2812 protocol format. Check Leandro's python [script](https://gist.github.com/lpereira/7178f27fe06ecfe042a0eff656786eed) that captures Webcam and send an UDP packet to a 10x10 WS2811 LED panel.  
 
 ## How to use
 
-Clone this repository in ```C:\Espressif\examples\ESP8266``` folder.
+Clone this repository into a folder.
 ```
-TODO: include Github link
+(https://github.com/lhc/nodeLHC_WS2811_LED_Controller.git)
 ```
 
-### Create an ``user_config.h`` file into ``include`` folder.
+### Create an ``user_config.h`` file into ``src`` folder.
 
 This file contains user specific configuration. Check the following example for this file:
 ```c
@@ -33,7 +33,7 @@ This file contains user specific configuration. Check the following example for 
 
 #ifdef SET_STATIC_IP
 #define USER_AP_IP_ADDRESS		"192.168.1.10"
-#define USER_AP_GATEWAY 			"192.168.1.1"
+#define USER_AP_GATEWAY 		"192.168.1.1"
 #define USER_AP_NETMASK			"255.255.255.0"
 #endif
 
@@ -44,8 +44,5 @@ This file contains user specific configuration. Check the following example for 
 Check ```mxp.h``` in ```include``` folder. 
 
 ## Editing and Building
-This project was built using eclipse IDE. Here it is a tutorial that shows an example of importing an example project (https://www.penninkhof.com/2015/06/esp8266-programming-from-eclipse/)
-
-### Adjusting COM port of nodeLHC (or other ESP8266-based development board)
-Before building and flash, adjust COM port in ```Makefile```. Now you can build using included ```Makefile``` and flash from Eclipse IDE.
+This project was built using Visual Studio Code IDE with platform.io. Add this folder in a separate workspace and build it using platform.io (https://docs.platformio.org/en/latest/ide/vscode.html#ide-vscode). 
 

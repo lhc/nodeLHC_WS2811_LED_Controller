@@ -26,11 +26,11 @@
 #include "user_interface.h"
 #include <os_type.h>
 #include <gpio.h>
+#include "driver/uart.h"
 #include "espconn.h"
-#include "../include/driver/uart.h"
-#include "../include/ws2811dma.h"
-#include "../include/mxp.h"
-#include "../include/user_config.h"
+#include "ws2811dma.h"
+#include "mxp.h"
+#include "user_config.h"
 
 static struct ip_info ipConfig;
 unsigned char *p = (unsigned char*)&ipConfig.ip.addr;

@@ -9,7 +9,7 @@
 #include <user_interface.h>
 #include <os_type.h>
 #include <espconn.h>
-#include "driver/uart.h"
+//#include "uart.h"
 
 // Project
 #include "mxp.h"

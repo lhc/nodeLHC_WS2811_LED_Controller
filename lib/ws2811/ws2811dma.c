@@ -19,7 +19,7 @@
  * data for one one color of an LED (so 32-bit per color which makes
  * 96bit = 12byte per LED)
  */
-uint32_t tape[MAXPIXELS * 3 + WS_BREAK_BYTES / 4];
+uint32_t tape[MAXPIXELS * 3 + WS_BREAK_BYTES];
 
 void ws2811dma_init() {
 	// I²S module seems to take some time to power up
@@ -27,7 +27,7 @@ void ws2811dma_init() {
 
 	/*** Prefill tape with zeros ***/
 	memset(tape, WS_BIT0 | (WS_BIT0<<4), sizeof(tape) - WS_BREAK_BYTES);
-	memset((void *)(((uint32_t)tape) - WS_BREAK_BYTES), 0, WS_BREAK_BYTES);
+	memset((void *)(((uint32_t)tape) + WS_BREAK_BYTES), 0, WS_BREAK_BYTES);
 
 	/*
 	 * DMA (Direct Memory Access) using SLC controller to fill I²S FIFO:
