@@ -1,10 +1,9 @@
-#include <ets_sys.h>
+#include <esp8266/pin_mux_register.h>
+//#include <esp8266/ets_sys.h>
 #include <string.h>
-#include <eagle_soc.h>
-#include <stdint.h>
-#include <user_interface.h>
-#include <os_type.h>
-#include <osapi.h>
+//#include <esp8266/eagle_soc.h>
+//#include <stdint.h>
+#include <c_types.h>
 
 // Project
 #include "ws2811dma.h"
