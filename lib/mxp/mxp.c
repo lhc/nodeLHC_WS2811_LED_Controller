@@ -25,10 +25,10 @@ void onMxpRecv(void *arg, char *dat, uint16_t len) {
 
 	/*** Copy buffer data into static memory to pass a pointer to callback function ***/
 	uint16_t i;
-	static uint8_t buf[MXP_MAXLEN][3];
+	static uint8_t buf[MXP_MAXLEN*3];
 	for (i = 0; i < (length * 3); i++)
 	{
-		buf[i / 3][i % 3] = dat[5 + i];
+		buf[((i / 3)*3) + (i % 3)] = dat[5 + i];
 	}
 
 	callback(buf, length, offset);

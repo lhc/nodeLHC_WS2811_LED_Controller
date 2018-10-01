@@ -4,7 +4,7 @@
 
 // Functions:
 void ws2811dma_init();
-void ws2811dma_put(uint8_t buffer[][3], uint16_t pixels, uint16_t offset);
+void ws2811dma_put(uint8_t buffer[], uint16_t pixels, uint16_t offset);
 
 /**
  * Configuration:

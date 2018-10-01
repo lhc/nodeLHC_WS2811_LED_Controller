@@ -5,7 +5,12 @@
 #include <uart.h>
 
 #include "user_config.h"
-#include "mxp.h"
+#ifdef Mxp
+    #include "mxp.h"
+#endif
+#ifdef Artnet
+    #include "artnet.h"
+#endif
 #include "ws2811dma.h"
 
 /**
@@ -19,6 +24,14 @@
  *   esptool.py --port /dev/ttyUSB0 erase_flash
  * 
  */
+
+#if defined(Artnet) && defined(Mxp)
+    #error "Choose only one protocol!"
+#endif
+
+#if !defined(Artnet) && !defined(Mxp)
+    #error "At least one protocol must be enable!"
+#endif
 
 
 static struct ip_info ipConfig;
@@ -51,7 +64,15 @@ void ICACHE_FLASH_ATTR wifiConnectCb(System_Event_t *evt)
     case EVENT_STAMODE_GOT_IP:
         wifi_get_ip_info(STATION_IF, &ipConfig);
         printf("%d.%d.%d.%d\n\nListening to UDP packages for LED display...",p[0],p[1],p[2],p[3]);
-        mxp_init(ws2811dma_put);
+        #ifdef Artnet
+            printf("Running Artnet!\n");
+            artnet_init();
+        #endif
+        #ifdef Mxp
+            printf("Running MXP!\n");
+            mxp_init(ws2811dma_put);
+        #endif
+
         break;
     case EVENT_SOFTAPMODE_STACONNECTED:
         printf("station: " MACSTR "join, AID = %d\n",
@@ -67,8 +88,6 @@ void ICACHE_FLASH_ATTR wifiConnectCb(System_Event_t *evt)
         break;
     }
 }
-
-
 
 /******************************************************************************
  * FunctionName : user_rf_cal_sector_set

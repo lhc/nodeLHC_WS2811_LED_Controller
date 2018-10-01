@@ -64,7 +64,7 @@ void ws2811dma_init() {
  * pixels: number of pixels in dataset
  * offset: nth LED in String
  */
-void ws2811dma_put(uint8_t buffer[][3], uint16_t pixels, uint16_t offset) {
+void ws2811dma_put(uint8_t buffer[], uint16_t pixels, uint16_t offset) {
 	if(pixels > MAXPIXELS) return;
 
 	// Fill tape with color data, 32bit of color data per color
@@ -73,7 +73,7 @@ void ws2811dma_put(uint8_t buffer[][3], uint16_t pixels, uint16_t offset) {
 	for(px = offset; px < offset + pixels; ++px) {
 		for (c = 0; c < 3; ++c) {
 			uint32_t pxval = 0x00000000;
-			uint8_t colorbyte = buffer[px - offset][c];
+			uint8_t colorbyte = buffer[((px - offset)*3) + c];
 			for (bit = 0; bit < 8; ++bit)
 				pxval |= (((1<<bit) & colorbyte) ? WS_BIT1 : WS_BIT0) << (bit * 4);
 			tape[px * 3 + c] = pxval;
