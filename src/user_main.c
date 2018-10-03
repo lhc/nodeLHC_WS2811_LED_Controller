@@ -143,18 +143,14 @@ uint32 user_rf_cal_sector_set(void)
 void task_blink(void* ignore)
 {
     #define PIN 2
-    //gpio16_output_conf();
     GPIO_AS_OUTPUT(PIN);
     while(true) {
-        //gpio16_output_set(0);
         GPIO_OUTPUT_SET(PIN, 0);
         vTaskDelay(1000/portTICK_RATE_MS);
-        //gpio16_output_set(1);
         GPIO_OUTPUT_SET(PIN, 1);
         vTaskDelay(1000/portTICK_RATE_MS); 
         char* test_str = "Painel de LED do LHC esta vivo!\r\n";
         printf(test_str);
-        //uart0_tx_buffer("1234567890", 11);
     }
 
     vTaskDelete(NULL);
@@ -193,7 +189,10 @@ void user_init(void)
     ipConfig.ip.addr = ipaddr_addr(USER_AP_IP_ADDRESS);
     ipConfig.gw.addr = ipaddr_addr(USER_AP_GATEWAY);
     ipConfig.netmask.addr = ipaddr_addr(USER_AP_NETMASK);
+#else
+	wifi_station_dhcpc_start();
 #endif
+
 
     wifi_set_ip_info(STATION_IF, &ipConfig);
     wifi_station_set_auto_connect(1);
