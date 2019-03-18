@@ -17,7 +17,7 @@
 #include <esp_wifi.h>
 #include <esp_libc.h>
 
-#define ARTNET_Port 0x1936
+#include "artnet.h"
 
 uint8_t artnet_enabled = 1;
 char artnet_shortname[18] = "LHC";
@@ -25,6 +25,8 @@ char artnet_longname[64] = "LHC Painel de LED";
 uint8_t artnet_net = 0;
 uint8_t artnet_subnet = 0;
 uint8_t artnet_universe = 0;
+
+uint8_t artnet_active = 0;
 
 
 static void ICACHE_FLASH_ATTR artnet_recv_opoutput(unsigned char *packet, unsigned short packetlen) {
@@ -145,6 +147,7 @@ static void ICACHE_FLASH_ATTR artnet_recv_oppoll(struct espconn *conn, unsigned 
 }
 
 static void ICACHE_FLASH_ATTR artnet_recv(void *arg, char *pusrdata, unsigned short length) {
+	artnet_active = 1;
 	unsigned char *data =(unsigned char *)pusrdata;
 	if (data && length>=10) {
 		if (data[0]=='A' && data[1]=='r' && data[2]=='t' && data[3]=='-' && 
@@ -177,4 +180,8 @@ void artnet_init() {
 		espconn_regist_recvcb(&artnetconn, artnet_recv);
 		espconn_create(&artnetconn);
 	}
+}
+
+uint8_t artnet_is_active(void){
+	return artnet_active == 1 ? 1 : 0;
 }

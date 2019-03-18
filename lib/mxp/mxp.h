@@ -30,4 +30,6 @@ typedef void (*led_callback)(uint8_t buffer[], uint16_t pixels, uint16_t offset)
 
 void mxp_init(led_callback led_cb);
 
+uint8_t mxp_is_active(void);
+
 #endif

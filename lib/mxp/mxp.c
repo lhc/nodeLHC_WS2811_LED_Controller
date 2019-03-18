@@ -16,8 +16,11 @@
 #include "user_config.h"
 
 led_callback callback;
+uint8_t mxp_active = 0;
 
 void onMxpRecv(void *arg, char *dat, uint16_t len) {
+	
+	mxp_active = 1;
 
 	uint16_t length = dat[3] * 0xff + dat[4];
 	uint16_t offset = dat[1] * 0xff + dat[2];
@@ -43,4 +46,9 @@ void mxp_init(led_callback led_cb) {
 	mxpserv.proto.udp->local_port = MXP_UDP_PORT;
 	espconn_regist_recvcb(&mxpserv, onMxpRecv);
 	espconn_create(&mxpserv);
+}
+
+
+uint8_t mxp_is_active(void){
+	return mxp_active == 1 ? 1 : 0;
 }

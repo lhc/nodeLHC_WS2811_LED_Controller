@@ -13,6 +13,11 @@
 #endif
 #include "ws2811dma.h"
 
+#ifdef FontIP
+    #include <fontToMatrix.h>
+#endif
+
+
 /**
  * Caso a placa fique piscando loucamente após gravar e não volte a funcionar nem por ação de reza brava. Use o seguinte comando
  *   esptool.py --port /dev/ttyUSB0 write_flash 0x3fc000 ~/.platformio/packages/framework-esp8266-rtos-sdk/bin/esp_init_data_default.bin
@@ -41,18 +46,21 @@ unsigned char *p = (unsigned char*)&ipConfig.ip.addr;
 #define WIFI_CLIENTSSID            USER_SSID
 #define WIFI_CLIENTPASSWORD        USER_PASS
 
+/* Prototypes */
+void showIP(uint8_t ip[4]);
+
 void ICACHE_FLASH_ATTR wifiConnectCb(System_Event_t *evt)
 {
     printf("Wifi event: %d\r\n", evt->event_id);
     switch (evt->event_id) {
     case EVENT_STAMODE_CONNECTED:
-        printf("connected to ssid %s, channel %d\n",
+        printf("connected to ssid \"%s\", channel %d\n",
                 evt->event_info.connected.ssid,
                 evt->event_info.connected.channel);
 
         break;
     case EVENT_STAMODE_DISCONNECTED:
-        printf("disconnected from ssid %s, reason %d\n",
+        printf("disconnected from ssid \"%s\", reason %d\n",
                 evt->event_info.disconnected.ssid,
                 evt->event_info.disconnected.reason);
         break;
@@ -72,6 +80,8 @@ void ICACHE_FLASH_ATTR wifiConnectCb(System_Event_t *evt)
             printf("Running MXP!\n");
             mxp_init(ws2811dma_put);
         #endif
+
+        showIP(p);
 
         break;
     case EVENT_SOFTAPMODE_STACONNECTED:
@@ -140,17 +150,37 @@ uint32 user_rf_cal_sector_set(void)
 
 
 
-void task_blink(void* ignore)
+void task_wait(void* ignore)
 {
     #define PIN 2
     GPIO_AS_OUTPUT(PIN);
+    uint32_t state = 0;
+    uint8_t data[MAXPIXELS][3] = {0};
+    char test_str[22]; // Maximum size of the IP format string (xxx.xxx.xxx.xxx:xxxxx)
+    vTaskDelay(1000/portTICK_RATE_MS);
     while(true) {
-        GPIO_OUTPUT_SET(PIN, 0);
-        vTaskDelay(1000/portTICK_RATE_MS);
-        GPIO_OUTPUT_SET(PIN, 1);
-        vTaskDelay(1000/portTICK_RATE_MS); 
-        char* test_str = "Painel de LED do LHC esta vivo!\r\n";
-        printf(test_str);
+        #ifdef FontIP
+        #ifdef Mxp
+        if (mxp_is_active() == 0){
+        #endif
+        #ifdef Artnet
+        if (artnet_is_active() == 0){
+        #endif
+            GPIO_OUTPUT_SET(PIN, 0);
+            vTaskDelay(50/portTICK_RATE_MS);
+            sprintf(test_str, "%d.%d.%d.%d:%d", p[0], p[1], p[2], p[3], ARTNET_Port);
+            strToFrame((char *)test_str, &state, (uint8_t *)data);
+            ws2811dma_put((uint8_t *)&data[0], MAXPIXELS, 0);
+            GPIO_OUTPUT_SET(PIN, 1);
+            vTaskDelay(50/portTICK_RATE_MS);
+        } else 
+        #endif
+        {
+            GPIO_OUTPUT_SET(PIN, 0);
+            vTaskDelay(100/portTICK_RATE_MS);
+            GPIO_OUTPUT_SET(PIN, 1);
+            vTaskDelay(100/portTICK_RATE_MS);
+        }
     }
 
     vTaskDelete(NULL);
@@ -167,7 +197,7 @@ void user_init(void)
     uart_init_new();
 	UART_SetBaudrate(UART0, 115200);
 	UART_SetBaudrate(UART1, 115200);
-    xTaskCreate(&task_blink, "startup", 2048, NULL, 1, NULL);
+    xTaskCreate(&task_wait, "wait", 2048, NULL, 1, NULL);
 
     espconn_init();
     printf("SDK version:%s\r\n", system_get_sdk_version());
@@ -205,3 +235,61 @@ void user_init(void)
 
 }
 
+void showIP(uint8_t ip[4]){
+    uint8_t data[MAXPIXELS][3] = {0};
+    ws2811dma_put((uint8_t *)&data[0], MAXPIXELS, 0);
+
+    printf("%d.%d.%d.%d\n",p[0],p[1],p[2],p[3]);
+
+    /*for(int i = 0; i < 8; i++){
+        for(int j = 0; j < 8; j++){
+            if (i == j){
+                data[8*i+(7-j)][0] = 255;
+                data[8*i+(7-j)][1] = 255;
+                data[8*i+(7-j)][2] = 255;
+            }
+        }
+    }*/
+
+    for(int i = 0; i < 1; i++){
+        for(int j = 0; j < 8; j++){
+            if (ip[0] & (0x01 << j)){
+                data[8*i+(7-j)][0] = 255;
+                data[8*i+(7-j)][1] = 255;
+                data[8*i+(7-j)][2] = 255;
+            }
+        }
+    }
+
+    for(int i = 2; i < 3; i++){
+        for(int j = 0; j < 8; j++){
+            if (ip[1] & (0x01 << j)){
+                data[8*i+(7-j)][0] = 255;
+                data[8*i+(7-j)][1] = 255;
+                data[8*i+(7-j)][2] = 255;
+            }
+        }
+    }
+
+    for(int i = 4; i < 5; i++){
+        for(int j = 0; j < 8; j++){
+            if (ip[2] & (0x01 << j)){
+                data[8*i+(7-j)][0] = 255;
+                data[8*i+(7-j)][1] = 255;
+                data[8*i+(7-j)][2] = 255;
+            }
+        }
+    }
+
+    for(int i = 6; i < 7; i++){
+        for(int j = 0; j < 8; j++){
+            if (ip[3] & (0x01 << j)){
+                data[8*i+(7-j)][0] = 255;
+                data[8*i+(7-j)][1] = 255;
+                data[8*i+(7-j)][2] = 255;
+            }
+        }
+    }
+
+    ws2811dma_put((uint8_t *)&data[0], MAXPIXELS, 0);
+}
