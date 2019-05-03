@@ -3,12 +3,12 @@
 #include "gpio.h"
 #include <esp_wifi.h>
 #include <uart.h>
+#include "defines.h"
 
 #include "user_config.h"
-#ifdef Mxp
+#if PROTOCOL_SELECTED == PROTOCOL_MXP
     #include "mxp.h"
-#endif
-#ifdef Artnet
+#elif PROTOCOL_SELECTED == PROTOCOL_ARTNET
     #include "artnet.h"
 #endif
 #include "ws2811dma.h"
@@ -30,16 +30,7 @@
  * 
  */
 
-#if defined(Artnet) && defined(Mxp)
-    #error "Choose only one protocol!"
-#endif
-
-#if !defined(Artnet) && !defined(Mxp)
-    #error "At least one protocol must be enable!"
-#endif
-
-
-static struct ip_info ipConfig;
+static struct ip_info ipConfig = { .ip = 0xffffffff, .netmask = 0xffffffff, .gw = 0xffffffff};
 unsigned char *p = (unsigned char*)&ipConfig.ip.addr;
 
 /* User AP config is defined in wifi_config.h, make sure to create this file and associate USER_SSID and USER_PASS*. This file will not be versioned.*/
@@ -71,17 +62,19 @@ void ICACHE_FLASH_ATTR wifiConnectCb(System_Event_t *evt)
         break;
     case EVENT_STAMODE_GOT_IP:
         wifi_get_ip_info(STATION_IF, &ipConfig);
-        printf("%d.%d.%d.%d\n\nListening to UDP packages for LED display...",p[0],p[1],p[2],p[3]);
-        #ifdef Artnet
+        printf("Device IP: %d.%d.%d.%d\n\nListening to UDP packages for LED display...\n",p[0],p[1],p[2],p[3]);
+        #if PROTOCOL_SELECTED == PROTOCOL_MXP
+            printf("Running MXP!\n");
+            mxp_init(ws2811dma_put);
+        #elif PROTOCOL_SELECTED == PROTOCOL_ARTNET
             printf("Running Artnet!\n");
             artnet_init();
         #endif
-        #ifdef Mxp
-            printf("Running MXP!\n");
-            mxp_init(ws2811dma_put);
-        #endif
+        
 
-        showIP(p);
+        #ifndef FontIP
+            showIP(p);
+        #endif
 
         break;
     case EVENT_SOFTAPMODE_STACONNECTED:
@@ -160,20 +153,22 @@ void task_wait(void* ignore)
     vTaskDelay(1000/portTICK_RATE_MS);
     while(true) {
         #ifdef FontIP
-        #ifdef Mxp
-        if (mxp_is_active() == 0){
-        #endif
-        #ifdef Artnet
-        if (artnet_is_active() == 0){
-        #endif
-            GPIO_OUTPUT_SET(PIN, 0);
-            vTaskDelay(50/portTICK_RATE_MS);
-            sprintf(test_str, "%d.%d.%d.%d:%d", p[0], p[1], p[2], p[3], ARTNET_Port);
-            strToFrame((char *)test_str, &state, (uint8_t *)data);
-            ws2811dma_put((uint8_t *)&data[0], MAXPIXELS, 0);
-            GPIO_OUTPUT_SET(PIN, 1);
-            vTaskDelay(50/portTICK_RATE_MS);
-        } else 
+            #if PROTOCOL_SELECTED == PROTOCOL_MXP
+                if (mxp_is_active() == 0){
+            #elif PROTOCOL_SELECTED == PROTOCOL_ARTNET
+                if (artnet_is_active() == 0){
+            #endif
+                GPIO_OUTPUT_SET(PIN, 0);
+                vTaskDelay(50/portTICK_RATE_MS);
+                //__ Test if it get a valid IP
+                if ( (p[0] != 0xff) && (p[1] != 0xff) && (p[2] != 0xff) && (p[3] != 0xff) ){
+                    sprintf(test_str, "%d.%d.%d.%d:%d", p[0], p[1], p[2], p[3], ARTNET_Port);
+                    strToFrame((char *)test_str, &state, (uint8_t *)data);
+                    ws2811dma_put((uint8_t *)&data[0], MAXPIXELS, 0);
+                }
+                GPIO_OUTPUT_SET(PIN, 1);
+                vTaskDelay(50/portTICK_RATE_MS);
+            } else 
         #endif
         {
             GPIO_OUTPUT_SET(PIN, 0);
@@ -227,7 +222,12 @@ void user_init(void)
     wifi_set_ip_info(STATION_IF, &ipConfig);
     wifi_station_set_auto_connect(1);
     wifi_station_connect();
-    printf("Hello World\n\n");
+    printf("\"Laboratorio Hacker de Campinas\"\n\tLED Panel\n");
+    #ifdef DEBUG
+        printf("\n@@@@@@@@@@@@@@ DEBUG ENABLE @@@@@@@@@@@@@@\n\n");
+        printf("The brigtness is set to %d%\n", BRIGHTNESS);
+        printf("\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n\n");
+    #endif
     wifi_set_event_handler_cb(wifiConnectCb);
 
     printf("Initializing WS2811...\n\n");
@@ -240,16 +240,6 @@ void showIP(uint8_t ip[4]){
     ws2811dma_put((uint8_t *)&data[0], MAXPIXELS, 0);
 
     printf("%d.%d.%d.%d\n",p[0],p[1],p[2],p[3]);
-
-    /*for(int i = 0; i < 8; i++){
-        for(int j = 0; j < 8; j++){
-            if (i == j){
-                data[8*i+(7-j)][0] = 255;
-                data[8*i+(7-j)][1] = 255;
-                data[8*i+(7-j)][2] = 255;
-            }
-        }
-    }*/
 
     for(int i = 0; i < 1; i++){
         for(int j = 0; j < 8; j++){

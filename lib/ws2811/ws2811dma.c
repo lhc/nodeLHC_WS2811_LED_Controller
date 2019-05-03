@@ -10,6 +10,8 @@
 #include "slc_register.h"
 #include "i2s_reg.h"
 
+#include "defines.h"
+
 
 /*
  * Raw WS2811 output data storage:
@@ -70,10 +72,19 @@ void ws2811dma_put(uint8_t buffer[], uint16_t pixels, uint16_t offset) {
 	// Fill tape with color data, 32bit of color data per color
 	uint16_t px, c;
 	uint8_t bit;
+
+	#if BRIGHTNESS != 100
+		float mult = ((float)BRIGHTNESS/100);
+	#endif
+
 	for(px = offset; px < offset + pixels; ++px) {
 		for (c = 0; c < 3; ++c) {
 			uint32_t pxval = 0x00000000;
-			uint8_t colorbyte = buffer[((px - offset)*3) + c];
+			#if BRIGHTNESS == 100
+				uint8_t colorbyte = buffer[((px - offset)*3) + c];
+			#else
+				uint8_t colorbyte = (uint8_t)(buffer[((px - offset)*3) + c] * mult);
+			#endif
 			for (bit = 0; bit < 8; ++bit)
 				pxval |= (((1<<bit) & colorbyte) ? WS_BIT1 : WS_BIT0) << (bit * 4);
 			tape[px * 3 + c] = pxval;
