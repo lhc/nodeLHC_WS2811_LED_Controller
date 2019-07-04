@@ -40,10 +40,20 @@ This file contains user specific configuration. Check the following example for 
 #endif
 ```
 
-## MXP UDP protocol for WS2811/WS2812 controller
+## Choosing the protocol
+
+Choosing the protocol.
+
+Available protocols:
+* MXP
+* Artnet
+
+To choose between them, go to the file `plataformio.ini` and at the field `build_flags` change the value of `PROTOCOL_SELECTED` to `PROTOCOL_ARTNET` or `PROTOCOL_MXP`.
+
+### MXP UDP protocol for WS2811/WS2812 controller
 Check ```mxp.h``` in ```include``` folder. 
 
-## Art-Net UDP protocol for WS2811/WS2812 controller
+### Art-Net UDP protocol for WS2811/WS2812 controller
 [Art-Net](https://en.wikipedia.org/wiki/Art-Net) is a UDP-based protocol used mainly for lighting controllers. Current implementation read data from ```Net: 0```, ```Subnet: 0``` and ```Universe: 0```. 
 
 Check [Glediator](http://www.solderlab.de/index.php/software/glediator) and [Jinx!](http://www.live-leds.de/) applications to generate awesome effects!
